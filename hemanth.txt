@@ -1,1 +1,0 @@
-String connection string = "Data source = your server; Initial catlog = your_database; Integrated security = true";
