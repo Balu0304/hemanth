@@ -1,0 +1,117 @@
+using System;
+using System.Data;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        DataTable Emp = new DataTable();
+        Emp.Columns.Add("EmployeeID", typeof(int));
+        Emp.Columns.Add("Fullname", typeof(string));
+        Emp.Columns.Add("City", typeof(string));
+        Emp.Columns.Add("Position", typeof(string));
+
+        Emp.Rows.Add(1, "Hemanth", "Chennai", "Intern");
+        Emp.Rows.Add(2, "DEV", "Chennai", "Software Developer");
+        Emp.Rows.Add(3, "DHANUSH", "Madurai", "Software Developer");
+        
+         DataRow Newrow = Emp.NewRow();
+        Newrow[0] = 4;
+        Newrow[1] = "AMOS";
+        Newrow[2] = "Salem";
+        Newrow[3] = "Network Team";
+        Emp.Rows.Add(Newrow);
+        
+        Emp.Rows.Add(5, "SHARU", "Pune", "Cloud Engineer");
+
+       
+
+        DataTable dept = new DataTable();
+        dept.Columns.Add("DEPTID", typeof(int));
+        dept.Columns.Add("DEPTNAME", typeof(string));
+
+        dept.Rows.Add(1, "Software Team");
+        dept.Rows.Add(2, "Network Team");
+        dept.Rows.Add(3, "Coding Team");
+dept.Rows.Add(4, "Cloud Team");
+
+        DataSet dataSet = new DataSet();
+        dataSet.Tables.Add(Emp);
+        dataSet.Tables.Add(dept);
+
+        dataSet.Tables[0].TableName = "Employee Table";
+        dataSet.Tables[1].TableName = "Department Table";
+
+        Console.WriteLine("Employee Table:");
+        foreach (DataRow row in dataSet.Tables["Employee Table"].Rows)
+        {
+            Console.WriteLine($"{row["EmployeeID"]} - {row["Fullname"]} {row["City"]}, {row["Position"]}");
+        }
+
+        Console.WriteLine("----------------------");
+
+        Console.WriteLine("Department Table:");
+        foreach (DataRow row in dataSet.Tables["Department Table"].Rows)
+        {
+            Console.WriteLine($"{row["DEPTID"]} - {row["DEPTNAME"]}");
+        }
+    }
+}
+----------------------------------------------------------------------------------------------
+
+using System;
+using System.Data;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+      
+        string[] employees = new string[]
+        {
+            "Bharath|10/10/1980|Male|Software Developer",
+            "Hemanth|19/09/1999|Male|Intern",
+            "Joel|05/07/1980|Female|Senior Developer",
+            "Ananya|15/04/1990|Female|Project Manager",
+            "Ravi|22/06/1985|Male|System Analyst",
+            "Priya|05/08/1993|Female|UI/UX Designer",
+            "Vikram|12/12/1988|Male|Data Scientist",
+            "Maya|27/11/1995|Female|Software Tester",
+            "Arjun|30/03/1987|Male|Network Engineer",
+            "Sahana|18/01/1992|Female|Database Administrator"
+        };
+		
+        DataTable Datatbl = new DataTable();
+		Datatbl.Columns.Add("NAME",typeof(string));
+				Datatbl.Columns.Add("Dob",typeof(string));
+				Datatbl.Columns.Add("Gender",typeof(string));
+						Datatbl.Columns.Add("Position",typeof(string));
+
+foreach (var datatables in employees)
+{
+	string[] val = datatables.Split('|');
+		string name = val[0].Trim();
+			string dob = val[1].Trim();
+			string gender = val[2].Trim();
+			string position = val[3].Trim();
+	
+	Datatbl.Rows.Add(name,dob,gender,position);
+}
+		foreach (DataRow row in Datatbl.Rows)
+        {
+            string name = row["NAME"].ToString();
+            string dob = row["Dob"].ToString();
+            string gender = row["Gender"].ToString();
+            string position = row["Position"].ToString();
+          
+            Console.WriteLine($"Name: {name}");
+            Console.WriteLine($"DOB: {dob}");
+			            Console.WriteLine($"GENDER: {gender}");
+						            Console.WriteLine($"POSITION: {position}");
+			Console.WriteLine("");
+
+
+
+        }
+	}
+}

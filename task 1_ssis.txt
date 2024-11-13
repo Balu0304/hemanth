@@ -1,0 +1,324 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using ClosedXML.Excel;
+
+class Program
+{
+    static void Main()
+    {
+        string connectionString = "YourConnectionStringHere";
+        string query1 = "SELECT * FROM Table1";
+        string query2 = "SELECT * FROM Table2";
+        string query3 = "SELECT * FROM Table3";
+
+        // Create a new DataTable for each table
+        DataTable dt1 = GetData(query1, connectionString);
+        DataTable dt2 = GetData(query2, connectionString);
+        DataTable dt3 = GetData(query3, connectionString);
+
+        // Generate the Excel file
+        string filePath = GenerateExcelFile(dt1, dt2, dt3);
+
+        Console.WriteLine($"Excel file saved at: {filePath}");
+    }
+
+    static DataTable GetData(string query, string connectionString)
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            SqlDataAdapter da = new SqlDataAdapter(query, conn);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+            return dt;
+        }
+    }
+
+    static string GenerateExcelFile(DataTable dt1, DataTable dt2, DataTable dt3)
+    {
+        // Generate a unique filename based on the current date and time
+        string fileName = $"Export_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.xlsx";
+        string filePath = @"C:\path\to\save\" + fileName;
+
+        // Create a new Excel workbook
+        using (var workbook = new XLWorkbook())
+        {
+            // Add tables to the workbook
+            workbook.AddWorksheet("Table1").Cell(1, 1).InsertTable(dt1);
+            workbook.AddWorksheet("Table2").Cell(1, 1).InsertTable(dt2);
+            workbook.AddWorksheet("Table3").Cell(1, 1).InsertTable(dt3);
+
+            // Save the workbook to the specified path
+            workbook.SaveAs(filePath);
+        }
+
+        return filePath;
+    }
+}
+----------------------------------------------------------------------
+--all files
+
+
+-- Create the database
+CREATE DATABASE SampleDB;
+GO
+
+USE SampleDB;
+GO
+
+-- Create Table1
+CREATE TABLE Table1 (
+    ID INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Age INT
+);
+GO
+
+-- Create Table2
+CREATE TABLE Table2 (
+    ID INT PRIMARY KEY,
+    ProductName VARCHAR(100),
+    Price DECIMAL(10, 2)
+);
+GO
+
+-- Create Table3
+CREATE TABLE Table3 (
+    ID INT PRIMARY KEY,
+    City VARCHAR(50),
+    Country VARCHAR(50)
+);
+GO
+
+-- Insert data into Table1
+INSERT INTO Table1 (ID, Name, Age) VALUES (1, 'John Doe', 30);
+INSERT INTO Table1 (ID, Name, Age) VALUES (2, 'Jane Smith', 28);
+INSERT INTO Table1 (ID, Name, Age) VALUES (3, 'Michael Johnson', 35);
+INSERT INTO Table1 (ID, Name, Age) VALUES (4, 'Emily Davis', 40);
+
+-- Insert data into Table2
+INSERT INTO Table2 (ID, ProductName, Price) VALUES (1, 'Laptop', 999.99);
+INSERT INTO Table2 (ID, ProductName, Price) VALUES (2, 'Smartphone', 699.99);
+INSERT INTO Table2 (ID, ProductName, Price) VALUES (3, 'Tablet', 499.99);
+INSERT INTO Table2 (ID, ProductName, Price) VALUES (4, 'Headphones', 199.99);
+
+-- Insert data into Table3
+INSERT INTO Table3 (ID, City, Country) VALUES (1, 'New York', 'USA');
+INSERT INTO Table3 (ID, City, Country) VALUES (2, 'Los Angeles', 'USA');
+INSERT INTO Table3 (ID, City, Country) VALUES (3, 'London', 'UK');
+INSERT INTO Table3 (ID, City, Country) VALUES (4, 'Paris', 'France');
+
+
+--stored procedure (multiple data)
+
+CREATE PROCEDURE InsertData
+AS
+BEGIN
+    -- Insert data into Table1
+    INSERT INTO Table1 (ID, Name, Age) VALUES (5, 'Anna Green', 25);
+    INSERT INTO Table1 (ID, Name, Age) VALUES (6, 'Robert Brown', 50);
+    
+    -- Insert data into Table2
+    INSERT INTO Table2 (ID, ProductName, Price) VALUES (5, 'Smartwatch', 299.99);
+    INSERT INTO Table2 (ID, ProductName, Price) VALUES (6, 'Camera', 649.99);
+    
+    -- Insert data into Table3
+    INSERT INTO Table3 (ID, City, Country) VALUES (5, 'Berlin', 'Germany');
+    INSERT INTO Table3 (ID, City, Country) VALUES (6, 'Madrid', 'Spain');
+END;
+GO
+
+
+---- script task(c#)
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using ClosedXML.Excel;
+using Microsoft.SqlServer.Dts.Runtime;
+using System.Windows.Forms;
+
+public void Main()
+{
+    // Connection string to the database
+    string connectionString = "Data Source=YourServerName;Initial Catalog=SampleDB;Integrated Security=True";
+    
+    // Queries to fetch data
+    string query1 = "SELECT * FROM Table1";
+    string query2 = "SELECT * FROM Table2";
+    string query3 = "SELECT * FROM Table3";
+
+    // Fetch data from the database
+    DataTable dt1 = GetData(query1, connectionString);
+    DataTable dt2 = GetData(query2, connectionString);
+    DataTable dt3 = GetData(query3, connectionString);
+
+    // Generate the Excel file
+    string filePath = GenerateExcelFile(dt1, dt2, dt3);
+
+    // Set the result as Success
+    Dts.TaskResult = (int)ScriptResults.Success;
+}
+
+private DataTable GetData(string query, string connectionString)
+{
+    using (SqlConnection conn = new SqlConnection(connectionString))
+    {
+        SqlDataAdapter da = new SqlDataAdapter(query, conn);
+        DataTable dt = new DataTable();
+        da.Fill(dt);
+        return dt;
+    }
+}
+
+private string GenerateExcelFile(DataTable dt1, DataTable dt2, DataTable dt3)
+{
+    // Generate a dynamic file name based on the current date and time
+    string fileName = $"Export_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.xlsx";
+    string filePath = @"C:\path\to\save\" + fileName;
+
+    // Create a new Excel workbook
+    using (var workbook = new XLWorkbook())
+    {
+        // Add the tables to the workbook
+        var ws1 = workbook.AddWorksheet("Table1");
+        ws1.Cell(1, 1).InsertTable(dt1);
+
+        var ws2 = workbook.AddWorksheet("Table2");
+        ws2.Cell(1, 1).InsertTable(dt2);
+
+        var ws3 = workbook.AddWorksheet("Table3");
+        ws3.Cell(1, 1).InsertTable(dt3);
+
+        // Save the Excel workbook
+        workbook.SaveAs(filePath);
+    }
+
+    // Return the file path
+    return filePath;
+}
+------------------------------------------------------------
+output:
+Data Exported to Excel:
+
+The Script Task will query the database (SampleDB) for data from the three tables (Table1, Table2, Table3).
+The data will be exported to an Excel file with three separate worksheets, each corresponding to one of the tables.
+Dynamic Excel File Name:
+
+The Excel file will be saved with a dynamic name that includes the date and time of export, ensuring that each execution generates a unique file. The filename will follow this format:
+Copy code
+Export_yyyyMMdd_HHmmss.xlsx
+Example:
+If the SSIS package is executed on November 13, 2024 at 10:30:45 AM, the resulting file will be named:
+Copy code
+Export_20241113_103045.xlsx
+File Location:
+
+The Excel file will be saved in the folder path specified in the script task, for example:
+vbnet
+Copy code
+C:\path\to\save\Export_20241113_103045.xlsx
+(Ensure this path exists on the machine running SSIS, and that the user running SSIS has write permissions to this directory.)
+Excel File Content:
+
+The Excel file will contain three worksheets, each named after the corresponding table (Table1, Table2, Table3):
+
+Sheet 1: Table1
+
+ID	Name	Age
+1	John Doe	30
+2	Jane Smith	28
+3	Michael Johnson	35
+4	Emily Davis	40
+5	Anna Green	25
+6	Robert Brown	50
+Sheet 2: Table2
+
+ID	ProductName	Price
+1	Laptop	999.99
+2	Smartphone	699.99
+3	Tablet	499.99
+4	Headphones	199.99
+5	Smartwatch	299.99
+6	Camera	649.99
+Sheet 3: Table3
+
+ID	City	Country
+1	New York	USA
+2	Los Angeles	USA
+3	London	UK
+4	Paris	France
+5	Berlin	Germany
+6	Madrid	Spain
+-----------------------------------------------------------------------
+(or)
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using ClosedXML.Excel;
+using Microsoft.SqlServer.Dts.Runtime;
+
+public void Main()
+{
+    // Connection string to the database
+    string connectionString = "Data Source=YourServerName;Initial Catalog=SampleDB;Integrated Security=True";
+    
+    // Queries to fetch data from tables
+    string query1 = "SELECT * FROM Table1";
+    string query2 = "SELECT * FROM Table2";
+    string query3 = "SELECT * FROM Table3";
+
+    // Fetch data from the database
+    DataTable dt1 = GetData(query1, connectionString);
+    DataTable dt2 = GetData(query2, connectionString);
+    DataTable dt3 = GetData(query3, connectionString);
+
+    // Generate the Excel file
+    string filePath = GenerateExcelFile(dt1, dt2, dt3);
+
+    // Set the result as Success
+    Dts.TaskResult = (int)ScriptResults.Success;
+}
+
+private DataTable GetData(string query, string connectionString)
+{
+    using (SqlConnection conn = new SqlConnection(connectionString))
+    {
+        SqlDataAdapter da = new SqlDataAdapter(query, conn);
+        DataTable dt = new DataTable();
+        da.Fill(dt);
+        return dt;
+    }
+}
+
+private string GenerateExcelFile(DataTable dt1, DataTable dt2, DataTable dt3)
+{
+    // Generate a dynamic file name based on the current date and time
+    string fileName = $"Export_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.xlsx";
+    string filePath = @"C:\path\to\save\" + fileName;
+
+    // Create a new Excel workbook
+    using (var workbook = new XLWorkbook())
+    {
+        // Create and rename the first worksheet (Sheet1) to "CustomSheet1"
+        var ws1 = workbook.AddWorksheet("CustomSheet1");
+        ws1.Cell(1, 1).InsertTable(dt1);
+
+        // Add the second worksheet and use "Table2" as the sheet name
+        var ws2 = workbook.AddWorksheet("Table2");
+        ws2.Cell(1, 1).InsertTable(dt2);
+
+        // Add the third worksheet and use "Table3" as the sheet name
+        var ws3 = workbook.AddWorksheet("Table3");
+        ws3.Cell(1, 1).InsertTable(dt3);
+
+        // Save the workbook to the specified path
+        workbook.SaveAs(filePath);
+    }
+
+    // Return the file path of the generated Excel file
+    return filePath;
+}
+
+
